@@ -96,34 +96,34 @@ router.post("/sign-in", async (req, res, next) => {
 
 // CHANGE password
 // PATCH /change-password
-router.patch("/change-password", async (req, res, next) => {
-  const pw = req.body.passwords.old;
-  console.log("Received change-password request");
-
+router.patch("/change-password", requireToken, async (req, res, next) => {
   try {
-    const userToken = req.headers.authorization.split(" ")[1]; // Extract the token from the Authorization header
-    const user = await User.findOne({ token: userToken });
+    // `req.user` will be determined by decoding the token payload
+    const user = await User.findById(req.user.id);
 
-    if (!user) {
-      throw new Error("User not found");
-    }
+    // check that the old password is correct
+    const correctPassword = await bcrypt.compare(
+      req.body.passwords.old,
+      user.hashedPassword
+    );
 
-    const correctPassword = await bcrypt.compare(pw, user.hashedPassword);
-    console.log("Correct old password:", correctPassword);
-
+    // `correctPassword` will be true if hashing the old password ends up the
+    // same as `user.hashedPassword`
     if (!req.body.passwords.new || !correctPassword) {
-      console.log("Invalid request parameters");
       throw new BadParamsError();
     }
 
+    // hash the new password
     const hash = await bcrypt.hash(req.body.passwords.new, bcryptSaltRounds);
-    console.log("New password hashed:", hash);
 
+    // set and save the new hashed password in the DB
     user.hashedPassword = hash;
     await user.save();
 
+    // respond with no content and status 204
     res.sendStatus(204);
   } catch (error) {
+    // pass any errors along to the error handler
     next(error);
   }
 });
