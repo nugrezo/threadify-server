@@ -128,23 +128,14 @@ router.patch("/change-password", async (req, res, next) => {
   }
 });
 
-router.delete("/sign-out", requireToken, async (req, res, next) => {
-  try {
-    const userToken = req.headers.authorization.split(" ")[1]; // Extract the token from the Authorization header
-    const user = await User.findOne({ token: userToken });
-
-    if (!user) {
-      throw new Error("User not found");
-    }
-
-    // Clear the user's token
-    user.token = null;
-    await user.save();
-
-    res.sendStatus(204);
-  } catch (error) {
-    next(error);
-  }
+router.delete("/sign-out", requireToken, (req, res, next) => {
+  // create a new random token for the user, invalidating the current one
+  req.user.token = crypto.randomBytes(16);
+  // save the token and respond with 204
+  req.user
+    .save()
+    .then(() => res.sendStatus(204))
+    .catch(next);
 });
 
 module.exports = router;
