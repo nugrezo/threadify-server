@@ -4,7 +4,7 @@ const express = require("express");
 const passport = require("passport");
 
 // pull in Mongoose model for examples
-const Example = require("../models/example");
+const Thread = require("../models/thread");
 const User = require("../models/user");
 
 // this is a collection of methods that help us detect situations when we need
@@ -18,7 +18,7 @@ const handle404 = customErrors.handle404;
 const requireOwnership = customErrors.requireOwnership;
 
 // this is middleware that will remove blank fields from `req.body`, e.g.
-// { example: { title: '', text: 'foo' } } -> { example: { text: 'foo' } }
+// { threadify: { title: '', text: 'foo' } } -> { threadify: { text: 'foo' } }
 const removeBlanks = require("../../lib/remove_blank_fields");
 // passing this as a second argument to `router.<verb>` will make it
 // so that a token MUST be passed for that route to be available
@@ -29,8 +29,8 @@ const requireToken = passport.authenticate("bearer", { session: false });
 const router = express.Router();
 
 // INDEX
-// GET /examples
-router.get("/examples", async (req, res, next) => {
+// GET /threads
+router.get("/threads", async (req, res, next) => {
   let userToken = req.headers.authorization.split(" ")[1]; // Extract the token from the Authorization header // Declare userToken variable outside the try block
   let user; // Declare user variable outside the try block
 
@@ -42,13 +42,13 @@ router.get("/examples", async (req, res, next) => {
     }
 
     // Querying the Database
-    const examples = await Example.find();
+    const threads = await Thread.find();
 
     // Converting to Plain JavaScript Objects (POJO)
-    const examplesPOJO = examples.map((example) => example.toObject());
+    const threadsPOJO = threads.map((thread) => thread.toObject());
 
     // Responding to the Client
-    res.status(200).json({ examples: examplesPOJO });
+    res.status(200).json({ threads: threadsPOJO });
   } catch (error) {
     // Error Handling
     next(error);
@@ -56,8 +56,8 @@ router.get("/examples", async (req, res, next) => {
 });
 
 // SHOW
-// GET /examples/5a7db6c74d55bc51bdf39793
-router.get("/examples/:id", async (req, res, next) => {
+// GET /threads/5a7db6c74d55bc51bdf39793
+router.get("/threads/:id", async (req, res, next) => {
   let userToken = req.headers.authorization.split(" ")[1]; // Extract the token from the Authorization header // Declare userToken variable outside the try block
   let user; // Declare user variable outside the try block
 
@@ -69,14 +69,14 @@ router.get("/examples/:id", async (req, res, next) => {
     }
 
     // Finding the example by ID
-    const example = await Example.findById(req.params.id);
+    const thread = await Thread.findById(req.params.id);
 
-    if (!example) {
-      throw new Error("Example not found");
+    if (!thread) {
+      throw new Error("Thread not found");
     }
 
     // Respond with 200 and "example" JSON
-    res.status(200).json({ example: example.toObject() });
+    res.status(200).json({ thread: thread.toObject() });
   } catch (error) {
     // Error Handling
     next(error);
@@ -84,8 +84,8 @@ router.get("/examples/:id", async (req, res, next) => {
 });
 
 // CREATE
-// POST /examples
-router.post("/examples", async (req, res, next) => {
+// POST /threads
+router.post("/threads", async (req, res, next) => {
   const userToken = req.headers.authorization.split(" ")[1]; // Extract the token from the Authorization header
   let user;
 
@@ -97,22 +97,22 @@ router.post("/examples", async (req, res, next) => {
       throw new Error("User not found");
     }
 
-    // Set owner of new example to be the current user
-    req.body.example.owner = user.id;
+    // Set owner of new thread to be the current user
+    req.body.thread.owner = user.id;
 
-    // Create the example
-    const example = await Example.create(req.body.example);
+    // Create the thread
+    const thread = await Thread.create(req.body.thread);
 
-    // Respond to successful `create` with status 201 and JSON of new "example"
-    res.status(201).json({ example: example.toObject() });
+    // Respond to successful `create` with status 201 and JSON of new "thread"
+    res.status(201).json({ thread: thread.toObject() });
   } catch (error) {
     next(error);
   }
 });
 
 // UPDATE
-// PATCH /examples/5a7db6c74d55bc51bdf39793
-router.patch("/examples/:id", async (req, res, next) => {
+// PATCH /threads/5a7db6c74d55bc51bdf39793
+router.patch("/threads/:id", async (req, res, next) => {
   const userToken = req.headers.authorization.split(" ")[1]; // Extract the token from the Authorization header
   let user;
 
@@ -124,18 +124,18 @@ router.patch("/examples/:id", async (req, res, next) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    // Find the example by ID
-    const example = await Example.findById(req.params.id);
-    handle404(example);
+    // Find the thread by ID
+    const thread = await Thread.findById(req.params.id);
+    handle404(thread);
 
-    // Set owner of the new example to be the current user
-    req.body.example.owner = user.id;
+    // Set owner of the new thread to be the current user
+    req.body.thread.owner = user.id;
 
     // You may still want to include some validation or checks here
     // before updating, depending on your requirements
 
-    // Update the example based on the request body
-    await example.updateOne(req.body.example);
+    // Update the thread based on the request body
+    await thread.updateOne(req.body.thread);
 
     // If the update succeeded, return 204 and no JSON
     res.sendStatus(204);
@@ -145,8 +145,8 @@ router.patch("/examples/:id", async (req, res, next) => {
 });
 
 // DESTROY
-// DELETE /examples/5a7db6c74d55bc51bdf39793
-router.delete("/examples/:id", async (req, res, next) => {
+// DELETE /threads/5a7db6c74d55bc51bdf39793
+router.delete("/threads/:id", async (req, res, next) => {
   const userToken = req.headers.authorization.split(" ")[1]; // Extract the token from the Authorization header
 
   try {
@@ -158,18 +158,18 @@ router.delete("/examples/:id", async (req, res, next) => {
       throw new Error("User not found");
     }
 
-    // Find the example by ID
-    const example = await Example.findById(req.params.id);
+    // Find the threads by ID
+    const thread = await Thread.findById(req.params.id);
 
-    if (!example) {
-      console.error("Example not found");
-      throw new Error("Example not found");
+    if (!thread) {
+      console.error("Thread not found");
+      throw new Error("Thread not found");
     }
 
-    // Ensure the current user owns the example (if needed)
+    // Ensure the current user owns the thread (if needed)
 
-    // Delete the example
-    await example.deleteOne();
+    // Delete the thread
+    await thread.deleteOne();
 
     // Respond with status 204 (no content) if the deletion succeeded
     res.sendStatus(204);

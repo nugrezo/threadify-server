@@ -13,6 +13,7 @@ const bcryptSaltRounds = 10;
 const errors = require("../../lib/custom_errors");
 
 const BadParamsError = errors.BadParamsError;
+
 const BadCredentialsError = errors.BadCredentialsError;
 
 const User = require("../models/user");
@@ -21,8 +22,9 @@ const User = require("../models/user");
 // so that a token MUST be passed for that route to be available
 // it will also set `res.user`
 const requireToken = passport.authenticate("bearer", { session: false });
+
 console.log("requireToken middleware executed", requireToken);
-// instantiate a router (mini app that only handles routes)
+
 const router = express.Router();
 
 // SIGN UP
@@ -60,33 +62,34 @@ router.post("/sign-up", async (req, res, next) => {
 
 // SIGN IN
 // POST /sign-in
+
 router.post("/sign-in", async (req, res, next) => {
   const pw = req.body.credentials.password;
-  console.log(`req.body is sign-in ${JSON.stringify(req.body)}`);
-  let user;
 
   try {
-    const record = await User.findOne({ email: req.body.credentials.email });
+    const user = await User.findOne({ email: req.body.credentials.email });
 
-    if (!record) {
+    if (!user) {
       throw new BadCredentialsError();
     }
-
-    user = record;
 
     const correctPassword = await bcrypt.compare(pw, user.hashedPassword);
 
-    if (correctPassword) {
-      const token = crypto.randomBytes(16).toString("hex");
-      user.token = token;
-
-      await user.save();
-    } else {
+    if (!correctPassword) {
       throw new BadCredentialsError();
     }
 
+    // If the passwords matched
+    const token = crypto.randomBytes(16).toString("hex");
+    user.token = token;
+
+    // Save the token to the DB as a property on the user
+    await user.save();
+
+    // Return status 201, the email, and the new token
     res.status(201).json({ user: user.toObject() });
   } catch (error) {
+    // Handle errors and pass them to the error handler
     next(error);
   }
 });
@@ -125,7 +128,7 @@ router.patch("/change-password", async (req, res, next) => {
   }
 });
 
-router.delete("/sign-out", async (req, res, next) => {
+router.delete("/sign-out", requireToken, async (req, res, next) => {
   try {
     const userToken = req.headers.authorization.split(" ")[1]; // Extract the token from the Authorization header
     const user = await User.findOne({ token: userToken });
