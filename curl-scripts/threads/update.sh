@@ -10,7 +10,6 @@ curl "${API}${URL_PATH}/${ID}" \
 --header "Authorization: Bearer ${TOKEN}" \
 --data '{
     "thread": {
-      "title": "'"${TITLE}"'",
       "text": "'"${TEXT}"'"
     }
   }'
