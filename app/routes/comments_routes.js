@@ -30,19 +30,12 @@ const router = express.Router();
 
 // CREATE
 // POST /threads/:id/comment
-router.post("/threads/:id/comment", async (req, res, next) => {
-  const { id } = req.params; // Extract the thread ID from the request parameters
-  const { text } = req.body.comment; // Extract the comment text from the request body
+
+router.post("/threads/:id/comment", requireToken, async (req, res, next) => {
+  const { id } = req.params;
+  const { text } = req.body.comment;
 
   try {
-    // Assuming you have a user token in the headers
-    const userToken = req.headers.authorization.split(" ")[1];
-    const user = await User.findOne({ token: userToken });
-
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
-
     // Find the thread by ID
     const thread = await Thread.findById(id);
 
@@ -66,52 +59,43 @@ router.post("/threads/:id/comment", async (req, res, next) => {
 });
 
 // DELETE
-// DELETE /threads/:id/comment
-// DELETE /threads/:threadId/comments/:commentId
 router.delete(
   "/threads/:threadId/comments/:commentId",
+  requireToken,
   async (req, res, next) => {
-    const { threadId, commentId } = req.params;
-
     try {
-      // Assuming you have a user token in the headers
-      const userToken = req.headers.authorization.split(" ")[1];
-      const user = await User.findOne({ token: userToken });
+      const threadId = req.params.threadId;
+      const commentId = req.params.commentId;
 
-      if (!user) {
-        return res.status(404).json({ error: "User not found" });
-      }
-
-      // Find the thread by ID
+      // Retrieve the thread
       const thread = await Thread.findById(threadId);
 
-      if (!thread) {
-        return res.status(404).json({ error: "Thread not found" });
-      }
+      // Handle 404 if the thread is not found
+      handle404(thread);
 
-      // Find the comment in the thread
-      const comment = thread.comments.id(commentId);
+      // Find the comment within the thread's comments array
+      const comment = thread.comments.find(
+        (comment) => comment.id === commentId
+      );
 
-      if (!comment) {
-        return res.status(404).json({ error: "Comment not found" });
-      }
+      // Handle 404 if the comment is not found
+      handle404(comment, "Comment not found");
 
-      // Check if the user is the author of the comment
-      if (comment.author !== user._id.toString()) {
-        return res
-          .status(403)
-          .json({
-            error: "Permission denied. You are not the author of this comment.",
-          });
-      }
+      // Ensure ownership of the comment
+      requireOwnership(req, thread);
 
-      // Remove the comment from the thread
-      comment.remove();
+      // Use array filter to remove the comment from the comments array
+      thread.comments = thread.comments.filter(
+        (comment) => comment.id !== commentId
+      );
+
+      // Save the thread with the updated comments array
       await thread.save();
 
-      // Respond with a success message or any desired response
-      res.status(200).json({ message: "Comment deleted successfully" });
+      // Respond with status 204 for successful deletion
+      res.sendStatus(204);
     } catch (error) {
+      // Pass any errors along to the error handler
       next(error);
     }
   }
