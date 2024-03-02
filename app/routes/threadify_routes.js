@@ -64,7 +64,7 @@ router.post("/threads", requireToken, async (req, res, next) => {
   try {
     // Set owner of new thread to be the current user
     req.body.thread.owner = req.user.id;
-
+    // Set username of new thread to be the current username
     req.body.thread.username = req.user.username;
 
     // Use await with Thread.create to handle it as a promise
