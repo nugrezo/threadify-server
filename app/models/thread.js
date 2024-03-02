@@ -8,6 +8,10 @@ const threadSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    username: {
+      type: String,
+      ref: "User",
+    },
     owner: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
