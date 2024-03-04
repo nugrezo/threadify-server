@@ -6,6 +6,7 @@ const passport = require("passport");
 // pull in Mongoose model for examples
 const Thread = require("../models/thread");
 const User = require("../models/user");
+// const Comments = require("../models/comments")
 
 // this is a collection of methods that help us detect situations when we need
 // to throw a custom error
@@ -32,9 +33,11 @@ const router = express.Router();
 // POST /threads/:id/comment
 
 router.post("/threads/:id/comment", requireToken, async (req, res, next) => {
+  req.body.comment.username = req.user.username;
   const { id } = req.params;
-  const { text } = req.body.comment;
+  const { text, username } = req.body.comment;
 
+  console.log(`req.body.comment is ${JSON.stringify(req.body.comment)}`);
   try {
     // Find the thread by ID
     const thread = await Thread.findById(id);
@@ -46,6 +49,7 @@ router.post("/threads/:id/comment", requireToken, async (req, res, next) => {
     // Create the comment
     const comment = {
       text,
+      username,
     };
 
     thread.comments.push(comment);
