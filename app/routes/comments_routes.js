@@ -33,6 +33,7 @@ const router = express.Router();
 // POST /threads/:id/comment
 
 router.post("/threads/:id/comment", requireToken, async (req, res, next) => {
+  console.log("User information in createCommentThread:", req.user);
   req.body.comment.username = req.user.username;
   const { id } = req.params;
   const { text, username } = req.body.comment;

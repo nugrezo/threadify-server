@@ -8,6 +8,7 @@ const commentsSchema = new mongoose.Schema(
     },
     username: {
       type: String,
+      ref: "User",
     },
   },
   {
