@@ -7,6 +7,7 @@ const cors = require("cors");
 const threadifyRoutes = require("./app/routes/threadify_routes");
 const userRoutes = require("./app/routes/user_routes");
 const commentRoutes = require("./app/routes/comments_routes");
+const likesRoutes = require("./app/routes/likes_routes");
 
 // require middleware
 const errorHandler = require("./lib/error_handler");
@@ -73,6 +74,7 @@ app.use(requestLogger);
 app.use(threadifyRoutes);
 app.use(userRoutes);
 app.use(commentRoutes);
+app.use(likesRoutes);
 
 // register error handling middleware
 // note that this comes after the route middlewares, because it needs to be
