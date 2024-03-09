@@ -33,8 +33,6 @@ const router = express.Router();
 
 // POST route to handle liking or unliking a thread
 router.post("/threads/:id/like", requireToken, async (req, res, next) => {
-  console.log("User information in likeThread:", req.user);
-
   const { id } = req.params;
 
   try {

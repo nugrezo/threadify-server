@@ -23,14 +23,11 @@ const User = require("../models/user");
 // it will also set `res.user`
 const requireToken = passport.authenticate("bearer", { session: false });
 
-console.log("requireToken middleware executed", requireToken);
-
 const router = express.Router();
 
 // SIGN UP
 // POST /sign-up
 router.post("/sign-up", async (req, res, next) => {
-  console.log(`req.body is sign-up ${JSON.stringify(req.body)}`);
   try {
     const credentials = req.body.credentials;
 

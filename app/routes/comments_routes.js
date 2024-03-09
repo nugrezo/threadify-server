@@ -33,12 +33,10 @@ const router = express.Router();
 // POST /threads/:id/comment
 
 router.post("/threads/:id/comment", requireToken, async (req, res, next) => {
-  console.log("User information in createCommentThread:", req.user);
   req.body.comment.username = req.user.username;
   const { id } = req.params;
   const { text, username } = req.body.comment;
 
-  console.log(`req.body.comment is ${JSON.stringify(req.body.comment)}`);
   try {
     // Find the thread by ID
     const thread = await Thread.findById(id);
