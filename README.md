@@ -1,25 +1,30 @@
 [![General Assembly Logo](https://camo.githubusercontent.com/1a91b05b8f4d44b5bbfb83abac2b0996d8e26c92/687474703a2f2f692e696d6775722e636f6d2f6b6538555354712e706e67)](https://generalassemb.ly/education/web-development-immersive)
 
-# express-api-template
+# express-api
 
-A template for starting projects with `express` as an API. Includes
-authentication and common middlewares.
+This backend server is created for starting projects with `express` as an API. Includes
+authentication and common middlewares. The middlewares are presented below.
+
+- app.use(replaceToken)
+- app.use(auth)
+- app.use(requestLogger)
+- app.use(threadifyRoutes)
+- app.use(userRoutes)
+- app.use(commentRoutes)
+- app.use(likesRoutes)
+- app.use(errorHandler)
 
 ## Installation
 
 1. [Download](../../archive/master.zip) this template.
-1. Move the .zip file to your `sei/projects/` directory and Unzip it (creating a
-   folder) -- **NOTE:** if the folder was already unzipped, use the `mv` command
-   line to move it to the `sei/projects/` directory.
-1. Rename the directory from express-api-template -> your-app-name.
+1. Rename the directory from express-api -> your-app-name.
 1. Empty [`README.md`](README.md) and fill with your own content.
 1. Move into the new project and `git init`.
-1. Replace all instances of `'express-api-template'` with your app name.
+1. Replace all instances of `'threadfy'` with your app name.
 1. Install dependencies with `npm install`.
 1. Ensure that you have `nodemon` installed by running `npm install -g nodemon`.
 1. Ensure the API is functioning properly by running `npm run server`.
 1. Once everything is working, make an initial commit.
-1. Follow the steps in [express-api-deployment-guide](https://git.generalassemb.ly/ga-wdi-boston/express-api-deployment-guide)
 
 ## Structure
 
@@ -82,6 +87,18 @@ Add your own scripts to test your custom API.
 | POST   | `/sign-in`          | `users#signin`   |
 | PATCH  | `/change-password/` | `users#changepw` |
 | DELETE | `/sign-out/`        | `users#signout`  |
+
+### Application Routes
+
+| Verb   | URI Pattern           | #Action           |
+| ------ | --------------------- | ----------------- |
+| POST   | `/threads`            | `thread#crate`    |
+| GET    | `/threads`            | `thread#showall`  |
+| DELETE | `/threads/id/`        | `threads#delete`  |
+| PATCH  | `/threads/id/`        | `threads#update`  |
+| GET    | `/threads/id/`        | `threads#show  `  |
+| POST   | `/threads/id/comment` | `threads#comment` |
+| POST   | `/threads/id/like`    | `threads#like  `  |
 
 #### POST /sign-up
 
@@ -194,6 +211,40 @@ Response:
 
 ```md
 HTTP/1.1 204 No Content
+```
+
+#### POST /threads
+
+Request:
+
+```sh
+curl "${API}${URL_PATH}" \
+  --include \
+  --request POST \
+  --header "Content-Type: application/json" \
+  --header "Authorization: Bearer ${TOKEN}" \
+  --data '{
+    "thread": {
+      "text": "'"${TEXT}"'"
+    }
+  }'
+```
+
+```sh
+curl-scripts/threads/create.sh
+```
+
+Example request:
+
+TOKEN="a58e50a154929d4ab55deca015366b0d" TEXT="Today the weather is amazing" curl-scripts/threads/create.sh
+
+Response:
+
+```md
+HTTP/1.1 201 Created
+Content-Type: application/json; charset=utf-8
+
+{"thread":{"text":"Today the weather is amazing","username":"mehmet","owner":"65ea5c4a9d1fe3d9e5f46083","\_id":"65ef8544e1bd9d3837852bb0","likes":[],"comments":[],"createdAt":"2024-03-11T22:27:16.855Z","updatedAt":"2024-03-11T22:27:16.855Z","\_\_v":0}}
 ```
 
 ## [License](LICENSE)
