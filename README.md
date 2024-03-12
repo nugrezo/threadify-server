@@ -1,6 +1,8 @@
 # express-api
 
-This backend server is created for starting projects with `express` as an API. Includes
+This is the backend repo of the project. Front-end of this project is found at https://github.com/nugrezo/threadify-client
+
+This backend server is created for starting projects with `express`. It Includes
 authentication and common middlewares. The middlewares are presented below.
 
 - app.use(replaceToken)
