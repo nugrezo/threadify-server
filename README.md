@@ -33,7 +33,9 @@ authentication and common middlewares. The middlewares are presented below.
 - Mongo DB Atlas
 - Mongoose
 - Passaport
--
+- crypto
+- bcrypt
+- hashedpassword
 
 1. [Download](../../archive/master.zip) this template.
 1. Rename the directory from express-api -> your-app-name.
