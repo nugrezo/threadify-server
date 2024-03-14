@@ -26,6 +26,25 @@ authentication and common middlewares. The middlewares are presented below.
 1. Ensure the API is functioning properly by running `npm run server`.
 1. Once everything is working, make an initial commit.
 
+## Technologies Used
+
+- Express api
+- Node.js
+- Mongo DB Atlas
+- Mongoose
+- Passaport
+-
+
+1. [Download](../../archive/master.zip) this template.
+1. Rename the directory from express-api -> your-app-name.
+1. Empty [`README.md`](README.md) and fill with your own content.
+1. Move into the new project and `git init`.
+1. Replace all instances of `'threadfy'` with your app name.
+1. Install dependencies with `npm install`.
+1. Ensure that you have `nodemon` installed by running `npm install -g nodemon`.
+1. Ensure the API is functioning properly by running `npm run server`.
+1. Once everything is working, make an initial commit.
+
 ## Structure
 
 Dependencies are stored in [`package.json`](package.json).
