@@ -32,7 +32,7 @@ authentication and common middlewares. The middlewares are presented below.
 - Node.js
 - Mongo DB Atlas
 - Mongoose
-- Passaport
+- Passport
 - crypto
 - bcrypt
 - hashedpassword
