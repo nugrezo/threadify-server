@@ -37,6 +37,10 @@ authentication and common middlewares. The middlewares are presented below.
 - bcrypt
 - hashedpassword
 
+## Host
+
+This project is hosted by render.com
+
 ## Structure
 
 Dependencies are stored in [`package.json`](package.json).
