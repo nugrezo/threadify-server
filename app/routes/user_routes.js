@@ -136,4 +136,72 @@ router.delete("/sign-out", requireToken, (req, res, next) => {
     .catch(next);
 });
 
+// GET /users/:id
+router.get("/users/:id", requireToken, async (req, res, next) => {
+  try {
+    const user = await User.findById(req.params.id);
+
+    if (!user) {
+      throw new BadCredentialsError();
+    }
+
+    // Respond with user JSON
+    res.status(200).json({ user: user.toObject() });
+  } catch (error) {
+    // If an error occurs, pass it to the error handler middleware
+    next(error);
+  }
+});
+
+router.patch("/change-username/:id", requireToken, async (req, res, next) => {
+  try {
+    // Find the user by ID
+    const user = await User.findById(req.params.id);
+
+    if (!user) {
+      throw new BadCredentialsError();
+    }
+
+    // Update the username if provided in the request body
+    if (req.body.username) {
+      user.username = req.body.username;
+    }
+
+    // Save the updated user
+    await user.save();
+
+    // If the update succeeded, return 204 and no JSON
+    res.sendStatus(204);
+  } catch (error) {
+    // If an error occurs, pass it to the error handler middleware
+    next(error);
+  }
+});
+
+// PATCH /change-email/:id
+router.patch("/change-email/:id", requireToken, async (req, res, next) => {
+  try {
+    // Find the user by ID
+    const user = await User.findById(req.params.id);
+
+    if (!user) {
+      throw new BadCredentialsError();
+    }
+
+    // Update the email if provided in the request body
+    if (req.body.email) {
+      user.email = req.body.email;
+    }
+
+    // Save the updated user
+    await user.save();
+
+    // If the update succeeded, return 204 and no JSON
+    res.sendStatus(204);
+  } catch (error) {
+    // If an error occurs, pass it to the error handler middleware
+    next(error);
+  }
+});
+
 module.exports = router;
