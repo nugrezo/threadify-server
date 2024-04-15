@@ -102,6 +102,9 @@ Add your own scripts to test your custom API.
 | POST   | `/sign-in`          | `users#signin`   |
 | PATCH  | `/change-password/` | `users#changepw` |
 | DELETE | `/sign-out/`        | `users#signout`  |
+| POST   | `/users/`           | `users#userinfo` |
+| PATCH  | `/change-email/`    | `users#userinfo` |
+| PATCH  | `/change-username/` | `users#userinfo` |
 
 ### Application Routes
 
