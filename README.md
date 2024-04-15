@@ -249,7 +249,7 @@ curl "${API}${URL_PATH}" \
 ```
 
 ```sh
-curl-scripts/threads/create.sh
+TOKEN="33ad6372f795694b333ec5f329ebeaaa" TEXT="sample text" curl-scripts/threads/create.sh
 ```
 
 Example request:
