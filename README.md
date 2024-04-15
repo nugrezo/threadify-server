@@ -96,15 +96,15 @@ Add your own scripts to test your custom API.
 
 ### Authentication
 
-| Verb   | URI Pattern         | #Action          |
-| ------ | ------------------- | ---------------- |
-| POST   | `/sign-up`          | `users#signup`   |
-| POST   | `/sign-in`          | `users#signin`   |
-| PATCH  | `/change-password/` | `users#changepw` |
-| DELETE | `/sign-out/`        | `users#signout`  |
-| POST   | `/users/`           | `users#userinfo` |
-| PATCH  | `/change-email/`    | `users#userinfo` |
-| PATCH  | `/change-username/` | `users#userinfo` |
+| Verb   | URI Pattern           | #Action          |
+| ------ | --------------------- | ---------------- |
+| POST   | `/sign-up`            | `users#signup`   |
+| POST   | `/sign-in`            | `users#signin`   |
+| PATCH  | `/change-password/`   | `users#changepw` |
+| DELETE | `/sign-out/`          | `users#signout`  |
+| POST   | `/users/id`           | `users#userinfo` |
+| PATCH  | `/change-email/id`    | `users#userinfo` |
+| PATCH  | `/change-username/id` | `users#userinfo` |
 
 ### Application Routes
 
