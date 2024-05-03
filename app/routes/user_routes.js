@@ -6,6 +6,8 @@ const passport = require("passport");
 // bcrypt docs: https://github.com/kelektiv/node.bcrypt.js
 const bcrypt = require("bcrypt");
 
+const multer = require("multer");
+
 // see above for explanation of "salting", 10 rounds is recommended
 const bcryptSaltRounds = 10;
 
@@ -17,6 +19,12 @@ const BadParamsError = errors.BadParamsError;
 const BadCredentialsError = errors.BadCredentialsError;
 
 const User = require("../models/user");
+
+const File = require("../models/file");
+
+const storage = multer.memoryStorage();
+
+const upload = multer({ storage });
 
 // passing this as a second argument to `router.<verb>` will make it
 // so that a token MUST be passed for that route to be available
@@ -200,6 +208,77 @@ router.patch("/change-email/:id", requireToken, async (req, res, next) => {
     res.sendStatus(204);
   } catch (error) {
     // If an error occurs, pass it to the error handler middleware
+    next(error);
+  }
+});
+
+// POST /upload-photo - Handle photo uploads for authenticated users
+router.post(
+  "/upload-photo",
+  requireToken,
+  upload.single("profilePhoto"),
+  async (req, res, next) => {
+    try {
+      // Find the user by ID
+      const user = await User.findById(req.user.id);
+
+      // Check if a profile photo was uploaded
+      if (!req.file) {
+        return res.status(400).json({ message: "No photo uploaded" });
+      }
+
+      // Verify that the user making the request is the owner of the photo
+      if (!user || user._id.toString() !== req.user.id) {
+        console.log("Unauthorized access. User not found or IDs do not match.");
+        return res.status(403).json({ message: "Unauthorized access" });
+      }
+
+      // Create a new File document for the uploaded photo
+      const file = new File({
+        filename: req.file.originalname,
+        contentType: req.file.mimetype,
+        size: req.file.size,
+        data: req.file.buffer,
+      });
+
+      // Save the file to the database
+      const savedFile = await file.save();
+
+      // Update the user's profile photo
+      user.profilePhoto = savedFile._id;
+      await user.save();
+
+      // Respond with success message
+      res.status(201).json({ message: "Photo uploaded successfully" });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+// DELETE /delete-photo - Handle photo deletion for authenticated users
+router.delete("/delete-photo", requireToken, async (req, res, next) => {
+  try {
+    // Find the user by ID
+    const user = await User.findById(req.user.id);
+
+    // Check if the user has a profile photo
+    if (!user.profilePhoto) {
+      return res
+        .status(400)
+        .json({ message: "User does not have a profile photo" });
+    }
+
+    // Delete the profile photo from the database
+    await File.findByIdAndDelete(user.profilePhoto);
+
+    // Remove the profile photo reference from the user document
+    user.profilePhoto = null;
+    await user.save();
+
+    // Respond with success message
+    res.status(200).json({ message: "Photo deleted successfully" });
+  } catch (error) {
     next(error);
   }
 });

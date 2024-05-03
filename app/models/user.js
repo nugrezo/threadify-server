@@ -17,6 +17,10 @@ const userSchema = new mongoose.Schema(
       required: true,
     },
     token: String,
+    profilePhoto: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "File",
+    },
   },
   {
     timestamps: true,
