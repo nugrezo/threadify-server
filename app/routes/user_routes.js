@@ -222,6 +222,8 @@ router.post(
       // Find the user by ID
       const user = await User.findById(req.user.id);
 
+      console.log("User object before update:", user.toObject());
+
       // Check if a profile photo was uploaded
       if (!req.file) {
         return res.status(400).json({ message: "No photo uploaded" });
