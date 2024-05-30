@@ -286,49 +286,39 @@ router.get("/get-photo", requireToken, async (req, res, next) => {
   }
 });
 
-// router.post("/upload-image", async (req, res) => {
-//   const { image } = req.body;
-//   console.log("req.body is ", req.body);
-//   try {
-//     await Image.create({ image: image });
-//     res.send({ status: "ok" });
-//   } catch (error) {
-//     res.send({ status: error });
-//   }
-// });
-
-// // GET /photos/:id - Retrieve and display a specific photo by its ID
-// router.get("/get-image", async (req, res) => {
-//   try {
-//     const image = await Image.find({});
-//     res.send({ status: "ok", data: image });
-//   } catch (err) {
-//     res.send({ status: err });
-//   }
-// });
-
 // DELETE /delete-photo - Handle photo deletion for authenticated users
+
 router.delete("/delete-photo", requireToken, async (req, res, next) => {
   try {
     // Find the user by ID
     const user = await User.findById(req.user.id);
 
-    // Check if the user has a profile photo
-    if (!user.profilePhoto) {
-      return res
-        .status(400)
-        .json({ message: "User does not have a profile photo" });
+    console.log("User object before deleting photo:", user);
+
+    // Check if the user exists
+    if (!user) {
+      console.log("User not found.");
+      return res.status(404).json({ message: "User not found" });
     }
 
-    // Delete the profile photo from the database
-    await File.findByIdAndDelete(user.profilePhoto);
+    // Check if the user has a profile photo
+    if (!user.profilePhoto) {
+      console.log("User has no profile photo to delete.");
+      return res
+        .status(404)
+        .json({ message: "User has no profile photo to delete" });
+    }
 
-    // Remove the profile photo reference from the user document
-    user.profilePhoto = null;
+    // Delete the user's profile photo
+    user.profilePhoto = undefined; // Remove the photo URL
     await user.save();
+    console.log("Profile photo deleted successfully");
 
     // Respond with success message
-    res.status(200).json({ message: "Photo deleted successfully" });
+    res.status(200).json({
+      message: "Profile photo deleted successfully",
+      user: user,
+    });
   } catch (error) {
     next(error);
   }
