@@ -22,16 +22,10 @@ const File = require("../models/file");
 
 const multer = require("multer");
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "../threadify-client/src/images/");
-  },
-  filename: function (req, file, cb) {
-    cb(null, file.originalname);
-  },
-});
-
+const storage = multer.memoryStorage(); // Store files in memory
 const upload = multer({ storage });
+
+// const upload = multer({ storage });
 
 // const upload = multer({ storage: storage });
 
@@ -226,85 +220,92 @@ router.patch("/change-email/:id", requireToken, async (req, res, next) => {
 });
 
 // POST /upload-photo - Handle photo uploads for authenticated users
-router.post(
-  "/upload-photo",
-  requireToken,
-  upload.single("profilePhoto"),
-  async (req, res, next) => {
-    try {
-      console.log("Req.file is in photo upload is ", JSON.stringify(req.file));
-      // Find the user by ID
-      const user = await User.findById(req.user.id);
-
-      console.log("User object before update:", user.toObject());
-
-      // Check if a profile photo was uploaded
-      if (!req.file) {
-        return res.status(400).json({ message: "No photo uploaded" });
-      }
-
-      // Verify that the user making the request is the owner of the photo
-      if (!user || user._id.toString() !== req.user.id) {
-        console.log("Unauthorized access. User not found or IDs do not match.");
-        return res.status(403).json({ message: "Unauthorized access" });
-      }
-
-      // Create a new File document for the uploaded photo
-      const file = new File({
-        filename: req.file.originalname,
-        contentType: req.file.mimetype,
-        size: req.file.size,
-        data: req.file.buffer,
-        owner: user,
-      });
-
-      // Save the file to the database
-      const savedFile = await file.save();
-
-      // Update the user's profile photo
-      user.profilePhoto = savedFile._id;
-      await user.save();
-      console.log("Photo uploaded successfully");
-      // Respond with success message and the URL of the uploaded photo
-      res.status(201).json({
-        message: "Photo uploaded successfully",
-        file: {
-          ...req.file,
-          owner: user, // Include owner field in the response
-        },
-      });
-    } catch (error) {
-      next(error);
-    }
-  }
-);
-
-// GET /photos/:id - Retrieve and display a specific photo by its ID
-router.get("/get-photo", requireToken, async (req, res, next) => {
+router.post("/upload-photo", requireToken, async (req, res, next) => {
   try {
-    // Find the file by its ID
-    const file = await File.find({}).then((data) => {
-      res.send({ status: "ok", data: data });
-    });
+    const { imageUrl } = req.body;
+    console.log("req.body in photo upload is ", req.body);
 
-    // If the file doesn't exist or it's not an image, return a 404 error
-    if (!file || !file.contentType.startsWith("image/")) {
-      return res.status(404).json({ message: "Photo not found" });
+    // Find the user by ID
+    const user = await User.findById(req.user.id);
+
+    console.log("User object before update:", user);
+
+    // Check if an image URL was provided
+    if (!imageUrl) {
+      return res.status(400).json({ message: "No photo URL provided" });
     }
 
-    // Set the appropriate content type for the response
-    res.setHeader("Content-Type", file.contentType);
+    // Verify that the user making the request is the owner
+    if (!user || user._id.toString() !== req.user.id) {
+      console.log("Unauthorized access. User not found or IDs do not match.");
+      return res.status(403).json({ message: "Unauthorized access" });
+    }
 
-    console.log("Photo retrieved successfully:", file);
-    // Send a success message along with the file data
-    res.status(200).json({
-      message: "JSON MESSAGE Photo retrieved successfully",
-      data: file.data,
+    // Update the user's profile photo
+    user.profilePhoto = imageUrl;
+    await user.save();
+    console.log("Photo URL saved successfully");
+
+    // Respond with success message
+    res.status(201).json({
+      message: "Photo uploaded successfully",
+      user: user,
     });
   } catch (error) {
     next(error);
   }
 });
+
+// GET /photos/:id - Retrieve and display a specific photo by its ID
+router.get("/get-photo", requireToken, async (req, res, next) => {
+  try {
+    // Find the user by ID
+    const user = await User.findById(req.user.id);
+
+    console.log("User object:", user);
+
+    // Check if the user exists
+    if (!user) {
+      console.log("User not found.");
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Check if the user has a profile photo
+    if (!user.profilePhoto) {
+      console.log("User has no profile photo.");
+      return res.status(404).json({ message: "User has no profile photo" });
+    }
+
+    // Return the user's profile photo URL
+    res.status(200).json({
+      message: "Profile photo retrieved successfully",
+      photoUrl: user.profilePhoto,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// router.post("/upload-image", async (req, res) => {
+//   const { image } = req.body;
+//   console.log("req.body is ", req.body);
+//   try {
+//     await Image.create({ image: image });
+//     res.send({ status: "ok" });
+//   } catch (error) {
+//     res.send({ status: error });
+//   }
+// });
+
+// // GET /photos/:id - Retrieve and display a specific photo by its ID
+// router.get("/get-image", async (req, res) => {
+//   try {
+//     const image = await Image.find({});
+//     res.send({ status: "ok", data: image });
+//   } catch (err) {
+//     res.send({ status: err });
+//   }
+// });
 
 // DELETE /delete-photo - Handle photo deletion for authenticated users
 router.delete("/delete-photo", requireToken, async (req, res, next) => {

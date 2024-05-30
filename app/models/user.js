@@ -18,8 +18,8 @@ const userSchema = new mongoose.Schema(
     },
     token: String,
     profilePhoto: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "File",
+      type: String,
+      ref: "Image",
     },
   },
   {
