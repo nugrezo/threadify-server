@@ -34,8 +34,9 @@ const router = express.Router();
 
 router.post("/threads/:id/comment", requireToken, async (req, res, next) => {
   req.body.comment.username = req.user.username;
+  req.body.comment.owner = req.user.id; // Set owner to current user ID
   const { id } = req.params;
-  const { text, username } = req.body.comment;
+  const { text, username, owner } = req.body.comment;
 
   try {
     // Find the thread by ID
@@ -49,48 +50,53 @@ router.post("/threads/:id/comment", requireToken, async (req, res, next) => {
     const comment = {
       text,
       username,
+      owner, // Ensure owner is set in the comment object
     };
 
     thread.comments.push(comment);
     await thread.save();
 
     // Respond with the newly created comment
-    res.status(201).json({ comment: comment });
+    res.status(201).json({ comment });
   } catch (error) {
     next(error);
   }
 });
 
 // DELETE
+// DELETE a comment from a thread
 router.delete(
   "/threads/:threadId/comments/:commentId",
   requireToken,
   async (req, res, next) => {
     try {
-      const threadId = req.params.threadId;
-      const commentId = req.params.commentId;
+      const { threadId, commentId } = req.params;
 
       // Retrieve the thread
       const thread = await Thread.findById(threadId);
 
       // Handle 404 if the thread is not found
-      handle404(thread);
+      if (!thread) {
+        return res.status(404).json({ error: "Thread not found" });
+      }
 
       // Find the comment within the thread's comments array
-      const comment = thread.comments.find(
-        (comment) => comment.id === commentId
-      );
+      const comment = thread.comments.id(commentId);
 
       // Handle 404 if the comment is not found
-      handle404(comment, "Comment not found");
+      if (!comment) {
+        return res.status(404).json({ error: "Comment not found" });
+      }
 
       // Ensure ownership of the comment
-      requireOwnership(req, thread);
+      if (!comment.owner.equals(req.user.id)) {
+        return res
+          .status(403)
+          .json({ error: "Unauthorized to delete this comment" });
+      }
 
-      // Use array filter to remove the comment from the comments array
-      thread.comments = thread.comments.filter(
-        (comment) => comment.id !== commentId
-      );
+      // Remove the comment from the thread
+      comment.remove();
 
       // Save the thread with the updated comments array
       await thread.save();

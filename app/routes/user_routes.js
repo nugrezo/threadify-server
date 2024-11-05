@@ -259,9 +259,11 @@ router.post("/upload-photo", requireToken, async (req, res, next) => {
 // GET /photos/:id - Retrieve and display a specific photo by its ID
 router.get("/get-photo", requireToken, async (req, res, next) => {
   try {
-    // Find the user by ID
-    const user = await User.findById(req.user.id);
+    // Use the `userId` query parameter if provided; otherwise, default to `req.user.id`
+    const userId = req.query.userId || req.user.id;
 
+    // Find the user by `userId`
+    const user = await User.findById(userId);
     console.log("User object:", user);
 
     // Check if the user exists

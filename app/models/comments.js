@@ -10,6 +10,11 @@ const commentsSchema = new mongoose.Schema(
       type: String,
       ref: "User",
     },
+    owner: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: false,
+    },
   },
   {
     timestamps: true,
